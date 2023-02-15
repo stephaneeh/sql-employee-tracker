@@ -43,7 +43,7 @@ ________               ___                       _________           ___
 
 
 //run inquirer for user prompts to create database
-function employee_tracker () {
+employee_tracker = () => {
     inquirer.prompt ([
         {   
             type: 'list',
@@ -54,64 +54,112 @@ function employee_tracker () {
             if (answers.prompt === 'Show all departments') {
               db.query(`SELECT * FROM department`, (err, result) => {
                 if (err) throw err;
-                console.log("Viewing All Departments: ");
+                console.log("Showing all departments: ");
                 console.table(result);
                 employee_tracker();
             });
           } else if (answers.prompt === 'Show all roles') {
               db.query(`SELECT * FROM roles`, (err, result) => {
                 if (err) throw err;
-                console.log("Viewing All Roles: ");
+                console.log("Showing all roles: ");
                 console.table(result);
                 employee_tracker();
             });
-          } else if (answers.prompt === 'Show all employees') {
-            db.query(`SELECT * FROM employees`, (err, result) => {
-              if (err) throw err;
-              console.log("Viewing All Employees: ");
-              console.table(result);
-              employee_tracker();
-          });
-            // } else if (answers.prompt === 'Add a new department') {
-            //     addDepartment();
-            // } else if (answers.prompt === 'Add a new role') {
-            //     addRole();
+            // } else if (answers.prompt === 'Show all employees') {
+            //   //FIXME: only bring back what is needed
+            //   // presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to  
+                        
+
+            //   db.query(`SELECT employees.id, employees.first_name, employees.last_name, department.department_name, roles.title, roles.salary FROM employees, roles, department`, (err, result) => {
+            //     if (err) throw err;
+            //     console.log("Showing all employees: ");
+            //     console.table(result);
+            //     employee_tracker();
+            // });
+            } else if (answers.prompt === 'Add a new department') {
+                addDepartment();
+            } else if (answers.prompt === 'Add a new role') {
+                addRole();
             // } else if (answers.prompt === 'Add a new employee') {
             //     addEmployee();
             // } else if (answers.prompt === 'Update an employee') {
             //     updateEmployee();     
-    } else if (answers.prompt === 'Finish') {
+    } else if (answers.prompt === 'Exit') {
         db.end();
-        
         console.log("Thank you for your help!");
+        process.exit(0);
     }
 })};
 
+
+addDepartment = () => {
+  inquirer.prompt([
+    {
+      type:'input',
+      name:'department',
+      message:'What is the name of your new department?',
+    }
+  ])
+  .then(answer => {
+    db.query(`INSERT INTO department (department_name) VALUES (?)`, answer.department, (err, results) => {
+      if (err) {
+        console.log(err);
+      }
+      console.log('You have successfully added ' + answer.department + " to departments");
+      employee_tracker();
+    });
+  });
+};
+
+addRole = () => {
+  inquirer.prompt([
+    {
+      type:'input',
+      name:'title',
+      message:'What is the title of the new role?',
+    },
+    {
+      type:'input',
+      name:'salary',
+      message:'What is the base salary of the new role?',
+    }
+  ])
+  .then(answer => {
+    db.query(`SELECT id, department_name FROM department`, (err, results) => {
+      if (err) return console.log(err);
+      const depID = results.map((dep) => { return  {name: dep.department_name, value: dep.id }});
+
+      inquirer.prompt([
+        {
+          type:'list',
+          name:'department',
+          message:'Which department does this role belong to?',
+          choices: depID
+        }
+      ]).then(depIDResult => {
+        db.query(`INSERT INTO roles (id, title, salary, department_id) VALUES (?,?,?,?)`, [answer.roleId, answer.title, answer.salary, depIDResult.department],(err, results) => {
+          if (err) {
+            console.log(err);
+          }
+          console.log('Successfully added ' + answer.title +  ' to roles');
+          employee_tracker();
+        });
+      });
+    }); 
+  }); 
+}
+
 // -------------------------------- functions --------------------------------
-// const showDepartment = () => {
-//   return db.query("SELECT * FROM department");
-// }
-
-// presented with a formatted table showing department names and department ids 
-
-// showRoles();
-// // presented with the job title, role id, the department that role belongs to, and the salary for that role
-
-// showEmployees();
-// // presented with a formatted table showing employee data, 
-// // including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
-
-// addDepartment();
-// // prompted to enter the name of the department and that department is added to the database
-
-// addRole();
-// // prompted to enter the name, salary, and department for the role and that role is added to the database
-
-// addEmployee();
-// // prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
-
-// updateEmployee();  
-// // prompted to select an employee to update and their new role and this information is updated in the database 
+          // WHEN I choose to view all employees
+// THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to  
+// WHEN I choose to add a department
+// THEN I am prompted to enter the name of the department and that department is added to the database
+// WHEN I choose to add a role
+// THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
+// WHEN I choose to add an employee
+// THEN I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
+// WHEN I choose to update an employee role
+// THEN I am prompted to select an employee to update and their new role and this information is updated in the database 
  
 
 

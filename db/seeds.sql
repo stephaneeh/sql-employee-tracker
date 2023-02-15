@@ -11,6 +11,7 @@ VALUES  ("Representative", 60000, 1),
         ("Engineer", 90000, 4);
        
 INSERT INTO employees (first_name, last_name, role_id, manager_id)
-VALUES  ("Fred", "Rogers", 1, 1),
-        ("Ginger", "Spice", 2, NULL),
-        ("Humphrey", "Jones", 3, 2);
+VALUES  ("Fred", "Rogers", 1, NULL),
+        ("Ginger", "Spice", 2, 1),
+        ("Francis", "Jones", 3, NULL),
+        ("Juliet", "Capulet", 4, 3);
