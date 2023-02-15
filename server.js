@@ -80,8 +80,6 @@ employee_tracker = () => {
 
 // -------------------------------- functions --------------------------------
 
-// WHEN I choose to view all roles
-// THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
 showRoles = () => {
     db.query(`SELECT roles.id AS id, roles.title AS title, department.department_name AS department, roles.salary AS salary FROM roles JOIN department ON roles.department_id = department.id`, (err, result) => {
       if (err) throw err;
@@ -91,21 +89,20 @@ showRoles = () => {
     });
   };
 
-
-// WHEN I choose to view all employees
-// THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to 
-//FIXME:
+//FIXME: missing manager data
 showEmployees = () => {
-  db.query( `SELECT employees.id, employees.first_name, employees.last_name, roles.title, department.department_name AS 'department', roles.salary, FROM employees, roles, department WHERE department.id = roles.department_id AND roles.id = employees.role_id ORDER BY employees.id ASC`,(err, results) => {
+  db.query(`SELECT employees.id AS employeeID, employees.first_name AS firstName, employees.last_name AS lastName, roles.title AS title, department.department_name AS department, roles.salary AS salary 
+  FROM employees INNER JOIN roles ON roles.id = employees.role_id INNER JOIN department ON department.id = roles.department_id` , (err, result) => {
                       if (err) {
                         console.log(err);
                       }
                       console.log("Showing all employees: ");
+                      console.table(result);
                       employee_tracker();
                     })
                   };
 
-
+                  
 addDepartment = () => {
   inquirer.prompt([
     {
