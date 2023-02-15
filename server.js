@@ -80,8 +80,8 @@ employee_tracker = () => {
                 addDepartment();
             } else if (answers.prompt === 'Add a new role') {
                 addRole();
-            // } else if (answers.prompt === 'Add a new employee') {
-            //     addEmployee();
+            } else if (answers.prompt === 'Add a new employee') {
+                addEmployee();
             // } else if (answers.prompt === 'Update an employee') {
             //     updateEmployee();     
     } else if (answers.prompt === 'Exit') {
@@ -149,6 +149,71 @@ addRole = () => {
   }); 
 }
 
+// WHEN I choose to add an employee
+// THEN I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
+addEmployee = () => {
+  inquirer.prompt([
+    {
+      type:'input',
+      name:'firstName',
+      message:'What is the first name of your new employee?',
+    },
+    {
+      type:'input',
+      name:'lastName',
+      message:'What is the last name of your new employee?',
+    },
+  ])
+  .then(answer => {
+    db.query(`SELECT id, title FROM roles`, (err, results) => {
+      if (err) return console.log(err);
+      const roleID = results.map((roles) => { return  {name: roles.title, value: roles.id }});
+
+      inquirer.prompt([
+        {
+          type:'list',
+          name:'title',
+          message:'What is the job title for this employee?',
+          choices: roleID
+        }
+      ]).then(roleIDResult => {
+        //select list of managers available and provide as prompt for choice
+          db.query(`SELECT first_name, last_name, id FROM employees`, (err, results) => {
+            if (err) return console.log(err);
+            const manager = results.map((employees) => { return  {name: employees.first_name + ' ' + employees.last_name, value: employees.id }});
+            const managerList = {name:'null', value:0};
+            manager.push(managerList);
+
+            inquirer.prompt([
+              {
+                type:'list',
+                name:'manager',
+                message:'Who is the manager for this employee?',
+                choices: manager
+              }
+            ]).then(managerResults => {
+              //add employee to employees table with manager info included
+              db.query(`INSERT INTO employees (first_name, last_name,role_id, manager_id) VALUES (?,?,?,?)`, [answer.firstName, answer.lastName, roleIDResult.title, managerResults.manager],(err, results) => {
+                if (err) {
+                  console.log(err);
+                }
+                console.log('Successfully added ' + answer.firstName + ' '+ answer.lastName +  ' to employees');
+                employee_tracker();
+              });
+            });
+          });
+        });
+      });
+    });
+  };
+        
+        
+        
+        
+        
+        
+      
+
 // -------------------------------- functions --------------------------------
           // WHEN I choose to view all employees
 // THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to  
@@ -156,8 +221,7 @@ addRole = () => {
 // THEN I am prompted to enter the name of the department and that department is added to the database
 // WHEN I choose to add a role
 // THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
-// WHEN I choose to add an employee
-// THEN I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
+
 // WHEN I choose to update an employee role
 // THEN I am prompted to select an employee to update and their new role and this information is updated in the database 
  
