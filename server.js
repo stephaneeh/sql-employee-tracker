@@ -49,7 +49,7 @@ employee_tracker = () => {
             type: 'list',
             name: 'prompt',
             message: 'What would you like to do?',
-            choices: ['Show all departments', 'Show all roles', 'Show all employees', 'Add a new department', 'Add a new role', 'Add a new employee', 'Update an employee role', 'Exit'],
+            choices: ['Show all departments', 'Show all roles', 'Show all employees', 'Add a new department', 'Add a new role', 'Add a new employee', 'Update an employees role', 'Exit'],
           }]).then((answers) => {
             if (answers.prompt === 'Show all departments') {
               db.query(`SELECT * FROM department`, (err, result) => {
@@ -66,24 +66,15 @@ employee_tracker = () => {
                 employee_tracker();
             });
             // } else if (answers.prompt === 'Show all employees') {
-            //   //FIXME: only bring back what is needed
-            //   // presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to  
-                        
-
-            //   db.query(`SELECT employees.id, employees.first_name, employees.last_name, department.department_name, roles.title, roles.salary FROM employees, roles, department`, (err, result) => {
-            //     if (err) throw err;
-            //     console.log("Showing all employees: ");
-            //     console.table(result);
-            //     employee_tracker();
-            // });
+              // showEmployees(); FIXME:
             } else if (answers.prompt === 'Add a new department') {
                 addDepartment();
             } else if (answers.prompt === 'Add a new role') {
                 addRole();
             } else if (answers.prompt === 'Add a new employee') {
                 addEmployee();
-            // } else if (answers.prompt === 'Update an employee') {
-            //     updateEmployee();     
+            } else if (answers.prompt === 'Update an employees role') {
+                updateEmployee();     
     } else if (answers.prompt === 'Exit') {
         db.end();
         console.log("Thank you for your help!");
@@ -92,6 +83,18 @@ employee_tracker = () => {
 })};
 
 
+
+// -------------------------------- functions --------------------------------
+
+// WHEN I choose to view all employees
+// THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to 
+
+
+
+
+
+// WHEN I choose to add a department
+// THEN I am prompted to enter the name of the department and that department is added to the database
 addDepartment = () => {
   inquirer.prompt([
     {
@@ -111,6 +114,8 @@ addDepartment = () => {
   });
 };
 
+// WHEN I choose to add a role
+// THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
 addRole = () => {
   inquirer.prompt([
     {
@@ -180,7 +185,7 @@ addEmployee = () => {
         //select list of managers available and provide as prompt for choice
           db.query(`SELECT first_name, last_name, id FROM employees`, (err, results) => {
             if (err) return console.log(err);
-            const manager = results.map((employees) => { return  {name: employees.first_name + ' ' + employees.last_name, value: employees.id }});
+            const manager = results.map((emp) => { return  {name: emp.first_name + ' ' + emp.last_name, value: emp.id }});
             const managerList = {name:'null', value:0};
             manager.push(managerList);
 
@@ -207,24 +212,51 @@ addEmployee = () => {
     });
   };
         
-        
-        
-        
-        
-        
-      
-
-// -------------------------------- functions --------------------------------
-          // WHEN I choose to view all employees
-// THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to  
-// WHEN I choose to add a department
-// THEN I am prompted to enter the name of the department and that department is added to the database
-// WHEN I choose to add a role
-// THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
-
 // WHEN I choose to update an employee role
 // THEN I am prompted to select an employee to update and their new role and this information is updated in the database 
- 
+updateEmployee = () => {
+  //pull the list of employees to be selected  
+  db.query(`SELECT id, first_name, last_name FROM employees`, (err, results) => {
+      if (err) return console.log(err);
+      const employeeResults = results.map((emp) => { return  {name: emp.first_name + " " + emp.last_name, value: emp.id }});
+
+      inquirer.prompt([
+        {
+          type:'list',
+          name:'employee',
+          message:'Which employee would you like to update?',
+          choices: employeeResults
+        }
+      ]).then(employeeAnswer => {
+        //return list of roles to update for the employee
+          db.query(`SELECT id, title FROM roles`, (err, results) => {
+            if (err) return console.log(err);
+            const roleResults = results.map((roles) => { return  {name: roles.title, value: roles.id }});
+
+            inquirer.prompt([
+              {
+                type:'list',
+                name:'roles',
+                message:'What is the new role for this employee?',
+                choices: roleResults
+              }
+            ]).then(rolesAnswer => {
+              //update role for employee selected
+              db.query(`UPDATE employees set role_id = (?) WHERE id = (?)`, [rolesAnswer.roles, employeeAnswer.employee],(err, results) => {
+                if (err) {
+                  console.log(err);
+                }
+                console.log('Successfully updated to role id ' + rolesAnswer.roles);
+                employee_tracker();
+              });
+            });
+          });
+        });
+      });
+    };
+
+
+
 
 
 // Default response for any other request (Not Found)
