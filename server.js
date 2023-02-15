@@ -59,14 +59,9 @@ employee_tracker = () => {
                 employee_tracker();
             });
           } else if (answers.prompt === 'Show all roles') {
-              db.query(`SELECT * FROM roles`, (err, result) => {
-                if (err) throw err;
-                console.log("Showing all roles: ");
-                console.table(result);
-                employee_tracker();
-            });
-            // } else if (answers.prompt === 'Show all employees') {
-              // showEmployees(); FIXME:
+              showRoles();
+            } else if (answers.prompt === 'Show all employees') {
+              showEmployees();
             } else if (answers.prompt === 'Add a new department') {
                 addDepartment();
             } else if (answers.prompt === 'Add a new role') {
@@ -80,21 +75,37 @@ employee_tracker = () => {
         console.log("Thank you for your help!");
         process.exit(0);
     }
-})};
-
-
+  });
+};
 
 // -------------------------------- functions --------------------------------
 
+// WHEN I choose to view all roles
+// THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
+showRoles = () => {
+    db.query(`SELECT roles.id AS id, roles.title AS title, department.department_name AS department, roles.salary AS salary FROM roles JOIN department ON roles.department_id = department.id`, (err, result) => {
+      if (err) throw err;
+      console.log("Showing all roles: ");
+      console.table(result);
+      employee_tracker();
+    });
+  };
+
+
 // WHEN I choose to view all employees
 // THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to 
+//FIXME:
+showEmployees = () => {
+  db.query( `SELECT employees.id, employees.first_name, employees.last_name, roles.title, department.department_name AS 'department', roles.salary, FROM employees, roles, department WHERE department.id = roles.department_id AND roles.id = employees.role_id ORDER BY employees.id ASC`,(err, results) => {
+                      if (err) {
+                        console.log(err);
+                      }
+                      console.log("Showing all employees: ");
+                      employee_tracker();
+                    })
+                  };
 
 
-
-
-
-// WHEN I choose to add a department
-// THEN I am prompted to enter the name of the department and that department is added to the database
 addDepartment = () => {
   inquirer.prompt([
     {
@@ -114,8 +125,6 @@ addDepartment = () => {
   });
 };
 
-// WHEN I choose to add a role
-// THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
 addRole = () => {
   inquirer.prompt([
     {
@@ -154,8 +163,6 @@ addRole = () => {
   }); 
 }
 
-// WHEN I choose to add an employee
-// THEN I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
 addEmployee = () => {
   inquirer.prompt([
     {
@@ -212,8 +219,7 @@ addEmployee = () => {
     });
   };
         
-// WHEN I choose to update an employee role
-// THEN I am prompted to select an employee to update and their new role and this information is updated in the database 
+
 updateEmployee = () => {
   //pull the list of employees to be selected  
   db.query(`SELECT id, first_name, last_name FROM employees`, (err, results) => {
@@ -254,10 +260,6 @@ updateEmployee = () => {
         });
       });
     };
-
-
-
-
 
 // Default response for any other request (Not Found)
 app.use((req, res) => {
