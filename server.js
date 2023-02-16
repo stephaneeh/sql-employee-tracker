@@ -49,18 +49,18 @@ employee_tracker = () => {
             type: 'list',
             name: 'prompt',
             message: 'What would you like to do?',
-            choices: ['Show all departments', 'Show all roles', 'Show all employees', 'Add a new department', 'Add a new role', 'Add a new employee', 'Update an employees role', 'Exit'],
+            choices: ['View all departments', 'View all roles', 'View all employees', 'Add a new department', 'Add a new role', 'Add a new employee', 'Update an employees role', 'Exit'],
           }]).then((answers) => {
-            if (answers.prompt === 'Show all departments') {
-              db.query(`SELECT * FROM department`, (err, result) => {
+            if (answers.prompt === 'View all departments') {
+              db.query(`SELECT * FROM department`, (err, results) => {
                 if (err) throw err;
                 console.log("Showing all departments: ");
-                console.table(result);
+                console.table(results);
                 employee_tracker();
             });
-          } else if (answers.prompt === 'Show all roles') {
+          } else if (answers.prompt === 'View all roles') {
               showRoles();
-            } else if (answers.prompt === 'Show all employees') {
+            } else if (answers.prompt === 'View all employees') {
               showEmployees();
             } else if (answers.prompt === 'Add a new department') {
                 addDepartment();
