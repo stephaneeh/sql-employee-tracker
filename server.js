@@ -89,10 +89,9 @@ showRoles = () => {
     });
   };
 
-//FIXME: missing manager data
+
 showEmployees = () => {
-  db.query(`SELECT employees.id AS employeeID, employees.first_name AS firstName, employees.last_name AS lastName, roles.title AS title, department.department_name AS department, roles.salary AS salary 
-  FROM employees INNER JOIN roles ON roles.id = employees.role_id INNER JOIN department ON department.id = roles.department_id` , (err, result) => {
+  db.query(`SELECT employees.id AS employeeID, employees.first_name AS firstName, employees.last_name AS lastName, roles.title AS title, department.department_name AS department, roles.salary AS salary, CONCAT(emp.first_name," ",emp.last_name) AS "Manager" FROM employees LEFT JOIN employees AS emp ON employees.manager_id = emp.id INNER JOIN roles ON roles.id = employees.role_id INNER JOIN department ON department.id = roles.department_id` , (err, result) => {
                       if (err) {
                         console.log(err);
                       }
